@@ -27,10 +27,14 @@ class ShopController extends Controller
         /** @var \App\Repository\ShopRepository $shopRepo */
         $shopRepo = $em->getRepository('App:Shop');
 
-        $lat = '33.6873749';
-        $lng = '-7.4239143';
+        if (!empty($request->query->get('liked')) && $request->query->get('liked') == true) {
+            // find liked shops only
+            $shops = $shopRepo->findPreferred(1);
+        } elseif (!empty($request->query->get('location'))) {
+            $location = explode(',', $request->query->get('location'));
+            $shops = $shopRepo->findAllWithDistanceOrder($location[0], $location[1]);
+        }
 
-        $shops = $shopRepo->findAllWithDistanceOrder($lat, $lng);
         //dump($shops);exit;
 
         if (null === $shops) {
@@ -52,9 +56,10 @@ class ShopController extends Controller
 
                /** @var \App\Entity\Shop $shop */
                foreach ($shops as $shop) {
-                   $result[$shop->getId()] = [
+                   $result[] = [
                        'name' => $shop->getName(),
                        'email' => $shop->getEmail(),
+                       'city' => $shop->getCity(),
                        'picture' => $shop->getPicture(),
                        'location' => [
                            'type' => 'point',

@@ -20,35 +20,6 @@ class ShopRepository extends ServiceEntityRepository
         parent::__construct($registry, Shop::class);
     }
 
-//    /**
-//     * @return Shop[] Returns an array of Shop objects
-//     */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('s.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Shop
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
-
     public function findAllWithDistanceOrder($lat, $lng) {
 
         $qb = $this->createQueryBuilder('s');
@@ -60,6 +31,14 @@ class ShopRepository extends ServiceEntityRepository
         $qb->orderBy('distance');
         $qb->setParameter('lat', $lat);
         $qb->setParameter('lng', $lng);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findPreferred($userId) {
+        $qb = $this->createQueryBuilder('s');
+        $qb->join('s.users u', 'WITH u.id=:user');
+        $qb->setParameter('user', $userId);
 
         return $qb->getQuery()->getResult();
     }
