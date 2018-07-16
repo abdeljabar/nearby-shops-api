@@ -2,8 +2,11 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use App\Entity\Shop;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
@@ -31,11 +34,24 @@ class User implements UserInterface, \Serializable
     private $plainPassword;
 
     /**
+     * @ORM\ManyToMany(targetEntity="Shop", mappedBy="users")
+     */
+    private $preferredShops;
+
+    /**
      * @return array
      *
      * @ORM\Column(type="json")
      */
     private $roles = [];
+
+    /**
+     * User constructor.
+     */
+    public function __construct()
+    {
+        $this->preferredShops = new ArrayCollection();
+    }
 
     public function getId()
     {
@@ -151,4 +167,34 @@ class User implements UserInterface, \Serializable
     {
         return null;
     }
+
+    /**
+     * Add/like shop
+     * @param \App\Entity\Shop $shop
+     * @return $this
+     */
+    public function addShop(Shop $shop) {
+        $this->preferredShops[] = $shop;
+
+        return $this;
+    }
+
+    /**
+     * Remove/unlike shop
+     * @param \App\Entity\Shop $shop
+     */
+    public function removeShop(Shop $shop) {
+        $this->preferredShops->removeElement($shop);
+    }
+
+    /**
+     * Get preferred/liked shops
+     * @return Collection
+     */
+    public function getPreferredShops()
+    {
+        return $this->preferredShops;
+    }
+
+
 }

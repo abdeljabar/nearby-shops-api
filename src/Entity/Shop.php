@@ -2,7 +2,10 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\User;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ShopRepository")
@@ -46,6 +49,21 @@ class Shop
      * @ORM\Column(type="string", length=255)
      */
     private $picture;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="User", inversedBy="preferredShops")
+     * @ORM\JoinTable(name="preferred_shops")
+     */
+    private $users;
+
+    /**
+     * Shop constructor.
+     */
+    public function __construct()
+    {
+        $this->users = new ArrayCollection();
+    }
+
 
     public function getId()
     {
@@ -123,4 +141,30 @@ class Shop
 
         return $this;
     }
+
+    /**
+     * @param \App\Entity\User $user
+     * @return $this
+     */
+    public function addUser(User $user) {
+        $this->users[] = $user;
+
+        return $this;
+    }
+
+    /**
+     * @param \App\Entity\User $user
+     */
+    public function removeUser(User $user) {
+        $this->users->removeElement($user);
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getUsers()
+    {
+        return $this->users;
+    }
+
 }
