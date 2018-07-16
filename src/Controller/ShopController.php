@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
@@ -16,13 +17,20 @@ class ShopController extends Controller
 {
     /**
      * @Route("/", name="shops_index")
+     * @param Request $request
      * @return JsonResponse
+     * @internal param Request $request
      * @Method("GET")
      */
-    public function index() {
+    public function index(Request $request) {
         $em = $this->getDoctrine()->getManager();
+        /** @var \App\Repository\ShopRepository $shopRepo */
+        $shopRepo = $em->getRepository('App:Shop');
 
-        $shops = $em->getRepository('App:Shop')->findAll();
+        $lat = '33.6873749';
+        $lng = '-7.4239143';
+
+        $shops = $shopRepo->findAllWithDistanceOrder($lat, $lng);
         //dump($shops);exit;
 
         if (null === $shops) {
