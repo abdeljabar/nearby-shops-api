@@ -2,6 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Shop;
+use App\Entity\User;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityRepository;
+use MongoDB\Driver\Manager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,6 +38,13 @@ class ShopController extends Controller
         } elseif (!empty($request->query->get('location'))) {
             $location = explode(',', $request->query->get('location'));
             $shops = $shopRepo->findAllWithDistanceOrder($location[0], $location[1]);
+        } else {
+            $playload = [
+                'success' => 0,
+                'message' => 'Error: Please provide the location in the query.'
+            ];
+            $code = 400;
+            return new JsonResponse($playload, $code);
         }
 
         //dump($shops);exit;
@@ -81,5 +93,158 @@ class ShopController extends Controller
         }
 
         return new JsonResponse($playload, $code);
+    }
+
+    /**
+     * @Route("/{shop}")
+     * @param Shop $shop
+     * @param Request $request
+     * @return JsonResponse
+     * @Method("POST")
+     */
+    public function shopAction(Shop $shop, Request $request) {
+        $playload = [];
+
+        $em = $this->getDoctrine()->getManager();
+
+        $user = new User();
+        $user->setEmail('taoufikallah@gmail.com');
+        $user->setPlainPassword('123456');
+        $user->setRoles(['ROLE_USER']);
+
+        $em->persist($user);
+        $em->flush();
+
+        $userRepo = $em->getRepository('App:User');
+
+        /** @var User $user */
+        $user = $userRepo->find(1);
+
+        if (!empty($request->query->get('action'))) {
+
+            $action = $request->query->get('action');
+
+            switch ($action) {
+                case 'like':
+                   if ($this->isLiked($user, $shop)) {
+                       $playload = [
+                           'success'=>0,
+                           'message'=>'Shop already liked.'
+                       ];
+                   } elseif ($this->like($user, $shop)) {
+                       $playload = [
+                           'success'=>1,
+                           'message'=>'Shop liked.'
+                       ];
+                   } else {
+                       $playload = [
+                           'success'=>0,
+                           'message'=>'Could not like shop.'
+                       ];
+                   }
+
+                    break;
+                case 'unlike':
+                    if ($this->isLiked($user, $shop) && $this->unlike($user, $shop) ) {
+                        $playload = [
+                            'success'=>1,
+                            'message'=>'Shop unliked'
+                        ];
+                    } else {
+                        $playload = [
+                            'success'=>0,
+                            'message'=>'Could not unlike shop.'
+                        ];
+                    }
+
+                    break;
+                case 'dislike':
+                    if ($this->dislike($user, $shop)) {
+                        $playload = [
+                            'success'=>1,
+                            'message'=>'Shop disliked'
+                        ];
+                    } else {
+                        $playload = [
+                            'success'=>0,
+                            'message'=>'Could not dislike shop.'
+                        ];
+                    }
+
+                    break;
+            }
+
+        } else {
+            $playload = [
+                'success'=>0,
+                'message'=>'Please, specify an action.'
+            ];
+        }
+
+        return new JsonResponse($playload, 200);
+    }
+
+    private function like(User $user, Shop $shop) {
+        $user->addShop($shop);
+        $shop->addUser($user);
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($user);
+        $em->persist($shop);
+
+        $em->flush();
+
+        return true;
+    }
+
+    private function unlike(User $user, Shop $shop) {
+        $user->removeShop($shop);
+        $shop->removeUser($user);
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($user);
+        $em->persist($shop);
+
+        $em->flush();
+
+        return true;
+    }
+
+    private function dislike(User $user, Shop $shop) {
+       /* $user->removeShop($shop);
+        $shop->removeUser($user);
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($user);
+        $em->persist($shop);
+
+        $em->flush();*/
+
+        return true;
+    }
+
+    private function isLiked(User $user, Shop $shop) {
+
+        $em = $this->getDoctrine()->getManager();
+
+        $qb = $em->createQueryBuilder();
+
+        $qb->select('count(s.id) as is_liked');
+        $qb->from('App:Shop','s');
+        $qb->join('s.users', 'u');
+        $qb->where('s.id=:shopId');
+        $qb->andWhere('u.id=:userId');
+        $qb->setParameter('userId', $user->getId());
+        $qb->setParameter('shopId', $shop->getId());
+
+        $result = $qb->getQuery()->getOneOrNullResult();
+        //dump($result);exit;
+
+        if ($result['is_liked'] > 0) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 }
