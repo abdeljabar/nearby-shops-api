@@ -54,14 +54,19 @@ class Shop
      * @ORM\ManyToMany(targetEntity="User", inversedBy="preferredShops")
      * @ORM\JoinTable(name="preferred_shops")
      */
-    private $users;
+    private $likers;
+
+    /**
+     * @ORM\OneToMany(targetEntity="DislikedShop", mappedBy="shop")
+     */
+    private $dislikedShops;
 
     /**
      * Shop constructor.
      */
     public function __construct()
     {
-        $this->users = new ArrayCollection();
+        $this->likers = new ArrayCollection();
     }
 
 
@@ -146,8 +151,8 @@ class Shop
      * @param \App\Entity\User $user
      * @return $this
      */
-    public function addUser(User $user) {
-        $this->users[] = $user;
+    public function addLiker(User $user) {
+        $this->likers[] = $user;
 
         return $this;
     }
@@ -155,16 +160,44 @@ class Shop
     /**
      * @param \App\Entity\User $user
      */
-    public function removeUser(User $user) {
-        $this->users->removeElement($user);
+    public function removeLiker(User $user) {
+        $this->likers->removeElement($user);
     }
 
     /**
      * @return Collection
      */
-    public function getUsers()
+    public function getLikers()
     {
-        return $this->users;
+        return $this->likers;
+    }
+
+    /**
+     * Add/like shop
+     * @param \App\Entity\DislikedShop $shop
+     * @return $this
+     */
+    public function addDislikedShop(DislikedShop $shop) {
+        $this->dislikedShops[] = $shop;
+
+        return $this;
+    }
+
+    /**
+     * Remove from disliked shops list
+     * @param \App\Entity\DislikedShop $shop
+     */
+    public function removeShopDislikedShop(DislikedShop $shop) {
+        $this->dislikedShops->removeElement($shop);
+    }
+
+    /**
+     * Get disliked shops
+     * @return Collection
+     */
+    public function getDislikedShops()
+    {
+        return $this->dislikedShops;
     }
 
 }

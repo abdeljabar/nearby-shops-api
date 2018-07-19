@@ -34,9 +34,14 @@ class User implements UserInterface, \Serializable
     private $plainPassword;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Shop", mappedBy="users")
+     * @ORM\ManyToMany(targetEntity="Shop", mappedBy="likers")
      */
     private $preferredShops;
+
+    /**
+     * @ORM\OneToMany(targetEntity="DislikedShop", mappedBy="user")
+     */
+    private $dislikedShops;
 
     /**
      * @return array
@@ -196,5 +201,32 @@ class User implements UserInterface, \Serializable
         return $this->preferredShops;
     }
 
+    /**
+     * Add/like shop
+     * @param \App\Entity\DislikedShop $shop
+     * @return $this
+     */
+    public function addDislikedShop(DislikedShop $shop) {
+        $this->dislikedShops[] = $shop;
+
+        return $this;
+    }
+
+    /**
+     * Remove from disliked shops list
+     * @param \App\Entity\DislikedShop $shop
+     */
+    public function removeShopDislikedShop(DislikedShop $shop) {
+        $this->dislikedShops->removeElement($shop);
+    }
+
+    /**
+     * Get disliked shops
+     * @return Collection
+     */
+    public function getDislikedShops()
+    {
+        return $this->dislikedShops;
+    }
 
 }

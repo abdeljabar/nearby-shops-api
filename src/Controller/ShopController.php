@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\DislikedShop;
 use App\Entity\Shop;
 use App\Entity\User;
 use Doctrine\ORM\EntityManager;
@@ -186,7 +187,7 @@ class ShopController extends Controller
 
     private function like(User $user, Shop $shop) {
         $user->addShop($shop);
-        $shop->addUser($user);
+        $shop->addLiker($user);
 
         $em = $this->getDoctrine()->getManager();
         $em->persist($user);
@@ -199,7 +200,7 @@ class ShopController extends Controller
 
     private function unlike(User $user, Shop $shop) {
         $user->removeShop($shop);
-        $shop->removeUser($user);
+        $shop->removeLiker($user);
 
         $em = $this->getDoctrine()->getManager();
         $em->persist($user);
@@ -211,14 +212,15 @@ class ShopController extends Controller
     }
 
     private function dislike(User $user, Shop $shop) {
-       /* $user->removeShop($shop);
-        $shop->removeUser($user);
+        $dislikedShop = new DislikedShop();
+
+        $dislikedShop->setUser($user);
+        $dislikedShop->setShop($shop);
 
         $em = $this->getDoctrine()->getManager();
-        $em->persist($user);
-        $em->persist($shop);
+        $em->persist($dislikedShop);
 
-        $em->flush();*/
+        $em->flush();
 
         return true;
     }
