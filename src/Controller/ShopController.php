@@ -160,7 +160,7 @@ class ShopController extends Controller
 
                     break;
                 case 'dislike':
-                    if ($this->dislike($user, $shop)) {
+                    if (!$this->isDisliked($user, $shop) && $this->dislike($user, $shop)) {
                         $playload = [
                             'success'=>1,
                             'message'=>'Shop disliked'
@@ -232,10 +232,13 @@ class ShopController extends Controller
         $qb = $em->createQueryBuilder();
 
         $qb->select('count(s.id) as is_liked');
+
         $qb->from('App:Shop','s');
         $qb->join('s.users', 'u');
+
         $qb->where('s.id=:shopId');
         $qb->andWhere('u.id=:userId');
+
         $qb->setParameter('userId', $user->getId());
         $qb->setParameter('shopId', $shop->getId());
 
@@ -243,6 +246,35 @@ class ShopController extends Controller
         //dump($result);exit;
 
         if ($result['is_liked'] > 0) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    private function isDisliked(User $user, Shop $shop) {
+
+        $em = $this->getDoctrine()->getManager();
+
+        $qb = $em->createQueryBuilder();
+
+        $qb->select('count(ds.id) as is_disliked');
+        $qb->from('App:DislikedShop','ds');
+
+        $qb->join('ds.user', 'u');
+        $qb->join('ds.shop', 's');
+
+        $qb->where('u.id=:shopId');
+        $qb->andWhere('s.id=:userId');
+
+        $qb->setParameter('userId', $user->getId());
+        $qb->setParameter('shopId', $shop->getId());
+
+        $result = $qb->getQuery()->getOneOrNullResult();
+        //dump($result);exit;
+
+        if ($result['is_disliked'] > 0) {
             return true;
         } else {
             return false;
