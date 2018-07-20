@@ -5,9 +5,6 @@ namespace App\Controller;
 use App\Entity\DislikedShop;
 use App\Entity\Shop;
 use App\Entity\User;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
-use MongoDB\Driver\Manager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -160,17 +157,26 @@ class ShopController extends Controller
 
                     break;
                 case 'dislike':
-                    if (!$this->isDisliked($user, $shop) && $this->dislike($user, $shop)) {
+                    $state = false;
+
+                    if ($this->isDisliked($user, $shop)) {
+                        if ($this->dislike($user, $shop, true))
+                            $state=true;
+                    } else {
+                        if ($this->dislike($user, $shop, false))
+                            $state=true;
+                    }
+
+                    if ($state)
                         $playload = [
                             'success'=>1,
                             'message'=>'Shop disliked'
                         ];
-                    } else {
+                    else
                         $playload = [
                             'success'=>0,
                             'message'=>'Could not dislike shop.'
                         ];
-                    }
 
                     break;
             }
@@ -211,15 +217,19 @@ class ShopController extends Controller
         return true;
     }
 
-    private function dislike(User $user, Shop $shop) {
-        $dislikedShop = new DislikedShop();
-
-        $dislikedShop->setUser($user);
-        $dislikedShop->setShop($shop);
-
+    private function dislike(User $user, Shop $shop, $isOld) {
         $em = $this->getDoctrine()->getManager();
-        $em->persist($dislikedShop);
 
+        if ($isOld) {
+            $dislikedShop = $em->getRepository('App:DislikedShop')->findOneBy(['user'=>$user, 'shop'=>$shop]);
+            $dislikedShop->setUpdatedAt(new \DateTime());
+        } else {
+            $dislikedShop = new DislikedShop();
+            $dislikedShop->setUser($user);
+            $dislikedShop->setShop($shop);
+        }
+
+        $em->persist($dislikedShop);
         $em->flush();
 
         return true;
@@ -254,7 +264,6 @@ class ShopController extends Controller
     }
 
     private function isDisliked(User $user, Shop $shop) {
-
         $em = $this->getDoctrine()->getManager();
 
         $qb = $em->createQueryBuilder();
@@ -265,8 +274,9 @@ class ShopController extends Controller
         $qb->join('ds.user', 'u');
         $qb->join('ds.shop', 's');
 
-        $qb->where('u.id=:shopId');
-        $qb->andWhere('s.id=:userId');
+        $qb->where('u.id=:userId');
+        $qb->andWhere('s.id=:shopId');
+
 
         $qb->setParameter('userId', $user->getId());
         $qb->setParameter('shopId', $shop->getId());
