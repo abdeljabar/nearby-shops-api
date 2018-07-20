@@ -23,8 +23,8 @@ class ShopRepository extends ServiceEntityRepository
 
     public function findPreferred($userId) {
         $qb = $this->createQueryBuilder('s');
-        $qb->join('s.users u', 'WITH u.id=:user');
-        $qb->setParameter('user', $userId);
+        $qb->join('s.likers u', 'WITH u.id=:userId');
+        $qb->setParameter('userId', $userId);
 
         return $qb->getQuery()->getResult();
     }
