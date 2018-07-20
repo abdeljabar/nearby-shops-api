@@ -81,7 +81,10 @@ class ShopController extends Controller
                                $shop->getLatitude(),
                                $shop->getLongitude()
                            ]
-                       ]
+                       ],
+                       'like_action_uri' => $this->generateUrl('shop_action', ['shop'=>$shop->getId(), 'action'=>'like']),
+                       'unlike_action_uri' => $this->generateUrl('shop_action', ['shop'=>$shop->getId(), 'action'=>'unlike']),
+                       'dislike_action_uri' => $this->generateUrl('shop_action', ['shop'=>$shop->getId(), 'action'=>'dislike'])
                    ];
                }
 
@@ -98,7 +101,7 @@ class ShopController extends Controller
     }
 
     /**
-     * @Route("/{shop}")
+     * @Route("/{shop}", name="shop_action")
      * @param Shop $shop
      * @param Request $request
      * @return JsonResponse
