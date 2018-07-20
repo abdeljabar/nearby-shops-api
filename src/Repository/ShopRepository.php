@@ -21,6 +21,14 @@ class ShopRepository extends ServiceEntityRepository
         parent::__construct($registry, Shop::class);
     }
 
+    public function findPreferred($userId) {
+        $qb = $this->createQueryBuilder('s');
+        $qb->join('s.users u', 'WITH u.id=:user');
+        $qb->setParameter('user', $userId);
+
+        return $qb->getQuery()->getResult();
+    }
+
     public function findAllWithDistanceOrder($lat, $lng) {
 
         $qb = $this->createQueryBuilder('s');
@@ -29,7 +37,7 @@ class ShopRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function findNonDisliked() {
+    public function findNonDisliked($userId) {
 
         $date = new \DateTime();
         $date->modify('-2 hour');
@@ -37,14 +45,21 @@ class ShopRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('s');
 
         $qb->leftJoin('s.dislikedShops', 'ds');
+        $qb->leftJoin('s.likers', 'sl');
+
         $qb->where('ds.id is null');
         $qb->orWhere('ds.updatedAt < :date');
+
+        $qb->andWhere('sl.id != :userId');
+        $qb->orWhere('sl.id is null');
+
         $qb->setParameter('date', $date);
+        $qb->setParameter('userId', $userId);
 
         return $qb->getQuery()->getResult();
     }
 
-    public function findNonDislikedWithDistanceOrder($lat, $lng) {
+    public function findNonDislikedWithDistanceOrder($lat, $lng, $userId) {
 
         $date = new \DateTime();
         $date->modify('-2 hour');
@@ -53,18 +68,16 @@ class ShopRepository extends ServiceEntityRepository
         $this->withDistanceOrder($qb, $lat, $lng);
 
         $qb->leftJoin('s.dislikedShops', 'ds');
+        $qb->leftJoin('s.likers', 'sl');
 
         $qb->where('ds.id is null');
         $qb->orWhere('ds.updatedAt < :date');
+
+        $qb->andWhere('sl.id != :userId');
+        $qb->orWhere('sl.id is null');
+
         $qb->setParameter('date', $date);
-
-        return $qb->getQuery()->getResult();
-    }
-
-    public function findPreferred($userId) {
-        $qb = $this->createQueryBuilder('s');
-        $qb->join('s.users u', 'WITH u.id=:user');
-        $qb->setParameter('user', $userId);
+        $qb->setParameter('userId', $userId);
 
         return $qb->getQuery()->getResult();
     }

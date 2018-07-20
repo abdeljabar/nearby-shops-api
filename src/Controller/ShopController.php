@@ -27,17 +27,26 @@ class ShopController extends Controller
      */
     public function index(Request $request) {
         $em = $this->getDoctrine()->getManager();
+
         /** @var \App\Repository\ShopRepository $shopRepo */
         $shopRepo = $em->getRepository('App:Shop');
 
+        $user = $em->getRepository('App:User')->find(1);
+
         if (!empty($request->query->get('liked')) && $request->query->get('liked') == true) {
+
             // find liked shops only
             $shops = $shopRepo->findPreferred(1);
+
         } elseif (!empty($request->query->get('location'))) {
+
             $location = explode(',', $request->query->get('location'));
-            $shops = $shopRepo->findNonDislikedWithDistanceOrder($location[0], $location[1]);
+            $shops = $shopRepo->findNonDislikedWithDistanceOrder($location[0], $location[1], $user->getId());
+
         } else {
-            $shops = $shopRepo->findNonDisliked();
+
+            $shops = $shopRepo->findNonDisliked($user->getId());
+
         }
 
         //dump($shops);exit;
