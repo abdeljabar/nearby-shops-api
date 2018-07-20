@@ -35,14 +35,9 @@ class ShopController extends Controller
             $shops = $shopRepo->findPreferred(1);
         } elseif (!empty($request->query->get('location'))) {
             $location = explode(',', $request->query->get('location'));
-            $shops = $shopRepo->findAllWithDistanceOrder($location[0], $location[1]);
+            $shops = $shopRepo->findNonDislikedWithDistanceOrder($location[0], $location[1]);
         } else {
-            $playload = [
-                'success' => 0,
-                'message' => 'Error: Please provide the location in the query.'
-            ];
-            $code = 400;
-            return new JsonResponse($playload, $code);
+            $shops = $shopRepo->findNonDisliked();
         }
 
         //dump($shops);exit;

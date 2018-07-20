@@ -35,6 +35,43 @@ class ShopRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    public function findNonDisliked() {
+
+        $date = new \DateTime();
+        $date->modify('-2 hour');
+
+        $qb = $this->createQueryBuilder('s');
+
+        $qb->leftJoin('s.dislikedShops', 'ds');
+        $qb->where('ds.id is null');
+        $qb->orWhere('ds.updatedAt < :date');
+        $qb->setParameter('date', $date);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findNonDislikedWithDistanceOrder($lat, $lng) {
+
+        $date = new \DateTime();
+        $date->modify('-2 hour');
+
+        $qb = $this->createQueryBuilder('s');
+        $qb->addSelect('((ACOS(SIN(:lat * PI() / 180) 
+            * SIN(s.latitude * PI() / 180) + COS(:lat * PI() / 180) 
+            * COS(s.latitude * PI() / 180) 
+            * COS((:lng - s.longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) as HIDDEN distance');
+
+        $qb->leftJoin('s.dislikedShops', 'ds');
+        $qb->where('ds.id is null');
+        $qb->orWhere('ds.updatedAt < :date');
+        $qb->orderBy('distance');
+        $qb->setParameter('lat', $lat);
+        $qb->setParameter('lng', $lng);
+        $qb->setParameter('date', $date);
+
+        return $qb->getQuery()->getResult();
+    }
+
     public function findPreferred($userId) {
         $qb = $this->createQueryBuilder('s');
         $qb->join('s.users u', 'WITH u.id=:user');
