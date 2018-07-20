@@ -157,17 +157,7 @@ class ShopController extends Controller
 
                     break;
                 case 'dislike':
-                    $state = false;
-
-                    if ($this->isDisliked($user, $shop)) {
-                        if ($this->dislike($user, $shop, true))
-                            $state=true;
-                    } else {
-                        if ($this->dislike($user, $shop, false))
-                            $state=true;
-                    }
-
-                    if ($state)
+                    if ($this->dislike($user, $shop))
                         $playload = [
                             'success'=>1,
                             'message'=>'Shop disliked'
@@ -217,13 +207,13 @@ class ShopController extends Controller
         return true;
     }
 
-    private function dislike(User $user, Shop $shop, $isOld) {
+    private function dislike(User $user, Shop $shop) {
         $em = $this->getDoctrine()->getManager();
 
-        if ($isOld) {
-            $dislikedShop = $em->getRepository('App:DislikedShop')->findOneBy(['user'=>$user, 'shop'=>$shop]);
+        $dislikedShop = $em->getRepository('App:DislikedShop')->findOneBy(['user'=>$user, 'shop'=>$shop]);
+        if (null !== $dislikedShop)
             $dislikedShop->setUpdatedAt(new \DateTime());
-        } else {
+        else {
             $dislikedShop = new DislikedShop();
             $dislikedShop->setUser($user);
             $dislikedShop->setShop($shop);
@@ -263,32 +253,4 @@ class ShopController extends Controller
 
     }
 
-    private function isDisliked(User $user, Shop $shop) {
-        $em = $this->getDoctrine()->getManager();
-
-        $qb = $em->createQueryBuilder();
-
-        $qb->select('count(ds.id) as is_disliked');
-        $qb->from('App:DislikedShop','ds');
-
-        $qb->join('ds.user', 'u');
-        $qb->join('ds.shop', 's');
-
-        $qb->where('u.id=:userId');
-        $qb->andWhere('s.id=:shopId');
-
-
-        $qb->setParameter('userId', $user->getId());
-        $qb->setParameter('shopId', $shop->getId());
-
-        $result = $qb->getQuery()->getOneOrNullResult();
-        //dump($result);exit;
-
-        if ($result['is_disliked'] > 0) {
-            return true;
-        } else {
-            return false;
-        }
-
-    }
 }
