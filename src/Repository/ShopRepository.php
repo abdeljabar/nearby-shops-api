@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Shop;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -23,14 +24,7 @@ class ShopRepository extends ServiceEntityRepository
     public function findAllWithDistanceOrder($lat, $lng) {
 
         $qb = $this->createQueryBuilder('s');
-        $qb->addSelect('((ACOS(SIN(:lat * PI() / 180) 
-            * SIN(s.latitude * PI() / 180) + COS(:lat * PI() / 180) 
-            * COS(s.latitude * PI() / 180) 
-            * COS((:lng - s.longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) as HIDDEN distance');
-
-        $qb->orderBy('distance');
-        $qb->setParameter('lat', $lat);
-        $qb->setParameter('lng', $lng);
+        $this->withDistanceOrder($qb, $lat, $lng);
 
         return $qb->getQuery()->getResult();
     }
@@ -56,17 +50,12 @@ class ShopRepository extends ServiceEntityRepository
         $date->modify('-2 hour');
 
         $qb = $this->createQueryBuilder('s');
-        $qb->addSelect('((ACOS(SIN(:lat * PI() / 180) 
-            * SIN(s.latitude * PI() / 180) + COS(:lat * PI() / 180) 
-            * COS(s.latitude * PI() / 180) 
-            * COS((:lng - s.longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) as HIDDEN distance');
+        $this->withDistanceOrder($qb, $lat, $lng);
 
         $qb->leftJoin('s.dislikedShops', 'ds');
+
         $qb->where('ds.id is null');
         $qb->orWhere('ds.updatedAt < :date');
-        $qb->orderBy('distance');
-        $qb->setParameter('lat', $lat);
-        $qb->setParameter('lng', $lng);
         $qb->setParameter('date', $date);
 
         return $qb->getQuery()->getResult();
@@ -78,6 +67,18 @@ class ShopRepository extends ServiceEntityRepository
         $qb->setParameter('user', $userId);
 
         return $qb->getQuery()->getResult();
+    }
+
+    private function withDistanceOrder(QueryBuilder $qb, $lat, $lng) {
+        $qb->addSelect('((ACOS(SIN(:lat * PI() / 180) 
+            * SIN(s.latitude * PI() / 180) + COS(:lat * PI() / 180) 
+            * COS(s.latitude * PI() / 180) 
+            * COS((:lng - s.longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) as HIDDEN distance');
+
+        $qb->orderBy('distance');
+
+        $qb->setParameter('lat', $lat);
+        $qb->setParameter('lng', $lng);
     }
 
 }
