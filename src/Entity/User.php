@@ -7,10 +7,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use App\Entity\Shop;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @ORM\Table(name="users")
+ * @UniqueEntity(fields={"email"}, message="This email address has already been used")
  */
 class User implements UserInterface, \Serializable
 {
@@ -23,15 +26,16 @@ class User implements UserInterface, \Serializable
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank()
+     * @Assert\Email()
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank()
      */
     private $password;
-
-    private $plainPassword;
 
     /**
      * @ORM\ManyToMany(targetEntity="Shop", mappedBy="likers")
@@ -71,30 +75,6 @@ class User implements UserInterface, \Serializable
     public function setEmail(string $email): self
     {
         $this->email = $email;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPlainPassword()
-    {
-        return $this->plainPassword;
-    }
-
-    /**
-     * @param mixed $plainPassword
-     *
-     * @return string
-     */
-    public function setPlainPassword($plainPassword)
-    {
-        $this->plainPassword = $plainPassword;
-
-        if ($plainPassword !== null) {
-            $this->setPassword($plainPassword);
-        }
 
         return $this;
     }

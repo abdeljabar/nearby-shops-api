@@ -9,11 +9,13 @@
         "lexik/jwt-authentication-bundle": "^2.5",
         "sensio/framework-extra-bundle": "^5.2",
         "symfony/console": "^4.1",
+        "symfony/expression-language": "^4.1",
         "symfony/flex": "^1.0",
         "symfony/framework-bundle": "^4.1",
         "symfony/lts": "^4@dev",
         "symfony/maker-bundle": "^1.5",
         "symfony/orm-pack": "^1.0",
+        "symfony/validator": "^4.1",
         "symfony/var-dumper": "^4.1",
         "symfony/yaml": "^4.1"
     },

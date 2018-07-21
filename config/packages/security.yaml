@@ -1,7 +1,7 @@
 security:
     encoders:
         App\Entity\User:
-            algorithm: plaintext
+            algorithm: bcrypt
 
     providers:
         main:
@@ -12,6 +12,10 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
+        register:
+            pattern: ^/register
+            anonymous: true
 
         login:
             provider: main
@@ -32,6 +36,9 @@ security:
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
+
+        main:
+            anonymous: true
 
     access_control:
         - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
