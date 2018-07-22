@@ -44,16 +44,9 @@ class ShopRepository extends ServiceEntityRepository
 
         $qb = $this->createQueryBuilder('s');
 
-        $qb->leftJoin('s.dislikedShops', 'ds');
-        $qb->leftJoin('s.likers', 'sl');
+        $this->whereLikedShopsAreExcluded($qb);
+        $this->whereDislikedShopsAreExcluded($qb, $date);
 
-        $qb->where('ds.id is null');
-        $qb->orWhere('ds.updatedAt < :date');
-
-        $qb->andWhere('sl.id != :userId');
-        $qb->orWhere('sl.id is null');
-
-        $qb->setParameter('date', $date);
         $qb->setParameter('userId', $userId);
 
         return $qb->getQuery()->getResult();
@@ -67,16 +60,9 @@ class ShopRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('s');
         $this->withDistanceOrder($qb, $lat, $lng);
 
-        $qb->leftJoin('s.dislikedShops', 'ds');
-        $qb->leftJoin('s.likers', 'sl');
+        $this->whereLikedShopsAreExcluded($qb);
+        $this->whereDislikedShopsAreExcluded($qb, $date);
 
-        $qb->where('ds.id is null');
-        $qb->orWhere('ds.updatedAt < :date');
-
-        $qb->andWhere('sl.id != :userId');
-        $qb->orWhere('sl.id is null');
-
-        $qb->setParameter('date', $date);
         $qb->setParameter('userId', $userId);
 
         return $qb->getQuery()->getResult();
@@ -92,6 +78,15 @@ class ShopRepository extends ServiceEntityRepository
 
         $qb->setParameter('lat', $lat);
         $qb->setParameter('lng', $lng);
+    }
+
+    private function whereDislikedShopsAreExcluded(QueryBuilder $qb, $date) {
+        $qb->andWhere('s.id not in (select IDENTITY(ds.shop) FROM App:DislikedShop ds where IDENTITY(ds.user)=:userId AND ds.updatedAt > :date)');
+        $qb->setParameter('date', $date);
+    }
+
+    private function whereLikedShopsAreExcluded(QueryBuilder $qb) {
+        $qb->andWhere('s.id not in (select ss.id FROM App:Shop ss JOIN ss.likers sl where sl.id=:userId)');
     }
 
 }
