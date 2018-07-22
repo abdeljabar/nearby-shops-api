@@ -31,12 +31,12 @@ class ShopController extends Controller
         /** @var \App\Repository\ShopRepository $shopRepo */
         $shopRepo = $em->getRepository('App:Shop');
 
-        $user = $em->getRepository('App:User')->find(1);
+        $user = $this->getUser();
 
         if (!empty($request->query->get('liked')) && $request->query->get('liked') == true) {
 
             // find liked shops only
-            $shops = $shopRepo->findPreferred(1);
+            $shops = $shopRepo->findPreferred($user->getId());
 
         } elseif (!empty($request->query->get('location'))) {
 
@@ -108,22 +108,9 @@ class ShopController extends Controller
      * @Method("POST")
      */
     public function shopAction(Shop $shop, Request $request) {
+
+        $user = $this->getUser();
         $playload = [];
-
-        $em = $this->getDoctrine()->getManager();
-
-        $user = new User();
-        $user->setEmail('taoufikallah@gmail.com');
-        $user->setPlainPassword('123456');
-        $user->setRoles(['ROLE_USER']);
-
-        $em->persist($user);
-        $em->flush();
-
-        $userRepo = $em->getRepository('App:User');
-
-        /** @var User $user */
-        $user = $userRepo->find(1);
 
         if (!empty($request->query->get('action'))) {
 
@@ -241,7 +228,7 @@ class ShopController extends Controller
         $qb->select('count(s.id) as is_liked');
 
         $qb->from('App:Shop','s');
-        $qb->join('s.users', 'u');
+        $qb->join('s.likers', 'u');
 
         $qb->where('s.id=:shopId');
         $qb->andWhere('u.id=:userId');

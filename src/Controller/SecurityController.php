@@ -61,7 +61,6 @@ class SecurityController extends Controller
                 $playload = [
                     'success' => 1,
                     'message' => 'User was created successfully.',
-                    'home'  => $this->generateUrl('home'),
                 ];
                 $code = 201;
 
