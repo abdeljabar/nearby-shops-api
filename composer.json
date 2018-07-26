@@ -7,6 +7,7 @@
         "ext-iconv": "*",
         "beberlei/DoctrineExtensions": "^1.1",
         "lexik/jwt-authentication-bundle": "^2.5",
+        "nelmio/cors-bundle": "^1.5",
         "sensio/framework-extra-bundle": "^5.2",
         "symfony/console": "^4.1",
         "symfony/expression-language": "^4.1",
