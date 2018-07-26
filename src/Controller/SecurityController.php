@@ -23,58 +23,46 @@ class SecurityController extends Controller
      */
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder, ValidatorInterface $validator) {
 
-        if ( !empty($request->get('email')) && !empty($request->get('password'))) {
-            $user = new User();
+        $user = new User();
 
-            $email = $request->get('email');
-            $user->setEmail($email);
+        $email = $request->get('email');
+        $user->setEmail($email);
 
-            $password = $passwordEncoder->encodePassword($user, $request->get('password'));
-            $user->setPassword($password);
+        $password = $passwordEncoder->encodePassword($user, $request->get('password'));
+        $user->setPassword($password);
 
-            $user->setRoles(['ROLE_USER']);
+        $user->setRoles(['ROLE_USER']);
 
-            $errors = $validator->validate($user);
+        $errors = $validator->validate($user);
 
-            if (count($errors) > 0) {
-                //dump($errors);
-
-                // customizing errors array
-                $cErrors = [];
-                foreach ($errors as $error) {
-                    $cErrors[] = ['property'  => $error->getPropertyPath(), 'message'   => $error->getMessage()];
-                }
-
-                $playload = [
-                    'success' => 0,
-                    'message' => 'Please verify the following errors.',
-                    'errors' => $cErrors
-                ];
-                $code = 400;
-
-            } else {
-                $em = $this->getDoctrine()->getManager();
-
-                $em->persist($user);
-                $em->flush();
-
-                $playload = [
-                    'success' => 1,
-                    'message' => 'User was created successfully.',
-                ];
-                $code = 201;
-
+        if (count($errors) > 0) {
+            // customizing errors array
+            $cErrors = [];
+            foreach ($errors as $error) {
+                $cErrors[] = ['property'  => $error->getPropertyPath(), 'message'   => $error->getMessage()];
             }
-
-        } else {
 
             $playload = [
                 'success' => 0,
-                'message' => 'Please submit email & password of the user.'
+                'message' => 'Please check email & password errors.',
+                'errors' => $cErrors
             ];
-            $code = 400;
+            $code = 406;
+
+        } else {
+            $em = $this->getDoctrine()->getManager();
+
+            $em->persist($user);
+            $em->flush();
+
+            $playload = [
+                'success' => 1,
+                'message' => 'User was created successfully.',
+            ];
+            $code = 201;
 
         }
+
 
         return new JsonResponse($playload, $code);
     }
