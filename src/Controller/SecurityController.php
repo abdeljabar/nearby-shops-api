@@ -63,7 +63,6 @@ class SecurityController extends Controller
 
         }
 
-
         return new JsonResponse($payload, $code);
     }
 

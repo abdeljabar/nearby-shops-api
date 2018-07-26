@@ -49,8 +49,6 @@ class ShopController extends Controller
 
         }
 
-        //dump($shops);exit;
-
         if (null === $shops) {
             $payload = [
                 'success' => 0,
@@ -237,7 +235,6 @@ class ShopController extends Controller
         $qb->setParameter('shopId', $shop->getId());
 
         $result = $qb->getQuery()->getOneOrNullResult();
-        //dump($result);exit;
 
         if ($result['is_liked'] > 0) {
             return true;
