@@ -52,14 +52,14 @@ class ShopController extends Controller
         //dump($shops);exit;
 
         if (null === $shops) {
-            $playload = [
+            $payload = [
                 'success' => 0,
                 'message' => 'Error: database failure.'
             ];
             $code = 500;
         } else {
            if (empty($shops)) {
-               $playload = [
+               $payload = [
                    'success' => 0,
                    'message' => 'Did not find any shops.'
                ];
@@ -88,7 +88,7 @@ class ShopController extends Controller
                    ];
                }
 
-               $playload = [
+               $payload = [
                    'success' => 1,
                    'message' => 'Result found.',
                    'result' => $result
@@ -97,7 +97,7 @@ class ShopController extends Controller
            }
         }
 
-        return new JsonResponse($playload, $code);
+        return new JsonResponse($payload, $code);
     }
 
     /**
@@ -110,7 +110,7 @@ class ShopController extends Controller
     public function shopAction(Shop $shop, Request $request) {
 
         $user = $this->getUser();
-        $playload = [];
+        $payload = [];
 
         if (!empty($request->query->get('action'))) {
 
@@ -119,17 +119,17 @@ class ShopController extends Controller
             switch ($action) {
                 case 'like':
                    if ($this->isLiked($user, $shop)) {
-                       $playload = [
+                       $payload = [
                            'success'=>0,
                            'message'=>'Shop already liked.'
                        ];
                    } elseif ($this->like($user, $shop)) {
-                       $playload = [
+                       $payload = [
                            'success'=>1,
                            'message'=>'Shop liked.'
                        ];
                    } else {
-                       $playload = [
+                       $payload = [
                            'success'=>0,
                            'message'=>'Could not like shop.'
                        ];
@@ -138,12 +138,12 @@ class ShopController extends Controller
                     break;
                 case 'unlike':
                     if ($this->isLiked($user, $shop) && $this->unlike($user, $shop) ) {
-                        $playload = [
+                        $payload = [
                             'success'=>1,
                             'message'=>'Shop unliked'
                         ];
                     } else {
-                        $playload = [
+                        $payload = [
                             'success'=>0,
                             'message'=>'Could not unlike shop.'
                         ];
@@ -152,12 +152,12 @@ class ShopController extends Controller
                     break;
                 case 'dislike':
                     if ($this->dislike($user, $shop))
-                        $playload = [
+                        $payload = [
                             'success'=>1,
                             'message'=>'Shop disliked'
                         ];
                     else
-                        $playload = [
+                        $payload = [
                             'success'=>0,
                             'message'=>'Could not dislike shop.'
                         ];
@@ -166,13 +166,13 @@ class ShopController extends Controller
             }
 
         } else {
-            $playload = [
+            $payload = [
                 'success'=>0,
                 'message'=>'Please, specify an action.'
             ];
         }
 
-        return new JsonResponse($playload, 200);
+        return new JsonResponse($payload, 200);
     }
 
     private function like(User $user, Shop $shop) {

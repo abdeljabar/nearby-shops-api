@@ -13,7 +13,7 @@ class DefaultController extends Controller
      * @Route("/", name="home")
      */
     public function index() {
-        $playload = [
+        $payload = [
             'success' => 1,
             'message' => 'API URLs.',
             'result' => [
@@ -23,6 +23,6 @@ class DefaultController extends Controller
             ]
         ];
 
-        return new JsonResponse($playload, 200);
+        return new JsonResponse($payload, 200);
     }
 }

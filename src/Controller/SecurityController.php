@@ -42,7 +42,7 @@ class SecurityController extends Controller
                 $cErrors[] = ['property'  => $error->getPropertyPath(), 'message'   => $error->getMessage()];
             }
 
-            $playload = [
+            $payload = [
                 'success' => 0,
                 'message' => 'Please check email & password errors.',
                 'errors' => $cErrors
@@ -55,7 +55,7 @@ class SecurityController extends Controller
             $em->persist($user);
             $em->flush();
 
-            $playload = [
+            $payload = [
                 'success' => 1,
                 'message' => 'User was created successfully.',
             ];
@@ -64,7 +64,7 @@ class SecurityController extends Controller
         }
 
 
-        return new JsonResponse($playload, $code);
+        return new JsonResponse($payload, $code);
     }
 
 }
