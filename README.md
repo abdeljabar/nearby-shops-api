@@ -1,7 +1,7 @@
 ## Hidden Founders web coding challenge - API (Server Side)
-A [coding challenge](https://github.com/hiddenfounders/web-coding-challenge) provided by Hidden Founders.
+[A coding challenge](https://github.com/hiddenfounders/web-coding-challenge) provided by [Hidden Founders](https://hiddenfounders.com/)
 
-For the client-side part of the project [click here](https://bitbucket.org/taoufikallah88/nearby-shops-web)
+For the client-side part of the project [click here](https://github.com/abdeljabar/nearby-shops-web)
 
 ## Overview
 The coding challenge is a web project whose objective is listing shops nearby
